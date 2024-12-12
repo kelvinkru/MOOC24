@@ -1,1 +1,1 @@
-https://programming-22.mooc.fi/
+https://programming-24.mooc.fi/
