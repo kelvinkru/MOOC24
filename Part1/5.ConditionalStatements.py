@@ -13,7 +13,7 @@ def magn():
     if nr < 100:
         print("Smaller than 100")
     if nr < 10:
-        print("Smaller than 10")
+        print("Smaller than 10 ")
     print("Thanks")
 
 if __name__ == '__main__':
