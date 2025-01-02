@@ -69,10 +69,15 @@ def fisrt_subs():
 def all_subs():
     word = str(input('Type in a word: '))
     char = str(input('Type in a character: '))
-    inx = word.find(char)
-    if inx != -1:
-        if len(word) - inx>3:
-            print(word[inx:inx+3])
+    for l in range(len(word)):
+        if l==0:
+            word2 = word[l:]
+        else:
+            word2 = word[l+inx+1:]
+        inx = word2.find(char)
+        if inx != -1:
+            if len(word2) - inx>3:
+                print(word2[inx:inx+3])
 
 if __name__ == '__main__':
-    fisrt_subs()
+    all_subs()
