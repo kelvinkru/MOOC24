@@ -35,6 +35,16 @@ def sparktut():
     finaldf = finaldf.select(['recency','frequency','monetary_value','CustomerID']).distinct()
     finaldf.show(20)
 
+    assemble = VectorAssembler(inputCols=[
+        'recency', 'frequency', 'monetary_value'
+    ], outputCol='features')
+
+    assembled_data = assemble.transform(finaldf)
+    scale = StandardScaler(inputCol='features', outputCol='standardized')
+    data_scale = scale.fit(assembled_data)
+    data_scaled_output = data_scale.transform(assembled_data)
+    data_scaled_output.select('standardized').show(20, 0)
+
 
 
 if __name__ == "__main__":
