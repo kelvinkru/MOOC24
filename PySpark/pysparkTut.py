@@ -3,6 +3,12 @@ from pyspark.sql.functions import *
 from pyspark.sql.types import *
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.feature import StandardScaler
+from pyspark.ml.clustering import KMeans
+from pyspark.ml.evaluation import ClusteringEvaluator
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def sparktut():
     spark = SparkSession.builder.appName("Datacamp Pyspark Tutorial").config("spark.memory.offHeap.enabled","true").config("spark.memory.offHeap.size","10g").getOrCreate()
@@ -44,6 +50,46 @@ def sparktut():
     data_scale = scale.fit(assembled_data)
     data_scaled_output = data_scale.transform(assembled_data)
     data_scaled_output.select('standardized').show(20, 0)
+    cost = np.zeros(10)
+    evaluator = ClusteringEvaluator(predictionCol='prediction', featuresCol='standardized',metricName='silhouette', distanceMeasure='squaredEuclidean')
+    for i in range(2, 10):
+        KMeans_algo = KMeans(featuresCol='standardized', k=i)
+        KMeans_fit = KMeans_algo.fit(data_scaled_output)
+        output = KMeans_fit.transform(data_scaled_output)
+        cost[i] = KMeans_fit.summary.trainingCost
+
+    df_cost = pd.DataFrame(cost[2:], columns=["cost"])
+    df_cost.insert(0, 'cluster', range(2, 10))
+    plt.plot(df_cost['cluster'], df_cost['cost'])
+    plt.xlabel('Nr Clusters')
+    plt.ylabel('Score')
+    plt.title('Elbow Curve')
+    plt.grid(True)
+    plt.show()
+
+    KMeans_algo = KMeans(featuresCol='standardized', k=4)
+    KMeans_fit = KMeans_algo.fit(data_scaled_output)
+    preds = KMeans_fit.transform(data_scaled_output)
+    # Show first 10 rows of predictions
+    preds.show(10)
+
+    # Convert necessary columns to Pandas DataFrame for visualization
+    df_viz = preds.select('recency', 'frequency', 'monetary_value', 'prediction').toPandas()
+
+    # Compute the average of each feature for each cluster
+    avg_df = df_viz.groupby('prediction', as_index=False).mean()
+
+    # Features to plot
+    list1 = ['recency', 'frequency', 'monetary_value']
+
+    # Plot bar charts for each feature by cluster
+    for i in list1:
+        plt.figure(figsize=(8, 6))
+        sns.barplot(x='prediction', y=i, data=avg_df, ci=None)
+        plt.title(f'Average {i} by Cluster')
+        plt.xlabel('Cluster')
+        plt.ylabel(f'Average {i}')
+        plt.show()
 
 
 
